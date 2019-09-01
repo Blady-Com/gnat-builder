@@ -1,0 +1,71 @@
+--- ./sqlite/gnatcoll_sqlite.gpr.0	2019-08-15 09:31:09.000000000 +0200
++++ ./sqlite/gnatcoll_sqlite.gpr	2019-08-14 21:50:40.000000000 +0200
+@@ -27,8 +27,7 @@
+ project GnatColl_Sqlite is
+
+    Version := External ("GNATCOLL_VERSION", "0.0");
+-   type OS_Kind is ("windows", "unix", "osx");
+-   OS : OS_Kind := External ("GNATCOLL_OS", "unix");
++   OS      := External ("OS", "unix");
+    Name    := "gnatcoll_sqlite";
+
+    type Build_Type is ("DEBUG", "PROD");
+@@ -46,7 +45,6 @@
+    for Languages use ("Ada", "C");
+
+    Thread_Lib := ();
+-   Lib_Opt_Ext := ();
+
+    case Library_Type is
+       when "relocatable" =>
+@@ -56,13 +54,10 @@
+    end case;
+
+    case OS is
+-      when "windows" =>
+-         Lib_Opt_Ext := ("-lsqlite3");
+-      when "osx" =>
++      when "Windows_NT" =>
+          null;
+       when others =>
+          Thread_Lib := ("-lpthread");
+-         Lib_Opt_Ext := ("-lsqlite3") & Thread_Lib;
+    end case;
+
+    type Sqlite_Dep_Kind is ("embedded", "external");
+@@ -73,7 +68,7 @@
+          for Source_Dirs use (".", "amalgamation");
+       when "external" =>
+          for Source_Dirs use (".");
+-         for Library_Options use Lib_Opt_Ext;
++         for Library_Options use ("-lsqlite3") & Thread_Lib;
+    end case;
+
+    package Compiler is
+--- ./sqlite/Makefile.0	2019-08-14 21:50:40.000000000 +0200
++++ ./sqlite/Makefile	2019-08-15 09:31:09.000000000 +0200
+@@ -71,6 +71,8 @@
+   $(error No toolchain found for target "$(TARGET)")
+ endif
+
++GNATCOLL_OS := $(if $(findstring darwin,$(NORMALIZED_TARGET)),osx,$(if $(findstring windows,$(NORMALIZED_TARGET)),windows,unix))
++
+ prefix := $(dir $(shell $(WHICH) gnatls))..
+ GNATCOLL_VERSION := $(shell $(CAT) $(SOURCE_DIR)/../version_information)
+ GNATCOLL_SQLITE := embedded
+@@ -102,6 +104,7 @@
+ GPR_VARS= \
+ 	 -XGNATCOLL_SQLITE=$(GNATCOLL_SQLITE) \
+ 	 -XGNATCOLL_VERSION=$(GNATCOLL_VERSION) \
++	 -XGNATCOLL_OS=$(GNATCOLL_OS) \
+ 	 -XBUILD=$(BUILD)
+
+ # Used to pass extra options to GPRBUILD, like -d for instance
+@@ -162,6 +165,7 @@
+ 	$(ECHO) "BUILD=$(BUILD)" >> makefile.setup
+ 	$(ECHO) "PROCESSORS=$(PROCESSORS)" >> makefile.setup
+ 	$(ECHO) "TARGET=$(TARGET)" >> makefile.setup
++	$(ECHO) "GNATCOLL_OS=$(GNATCOLL_OS)" >> makefile.setup
+ 	$(ECHO) "SOURCE_DIR=$(SOURCE_DIR)" >> makefile.setup
+ 	$(ECHO) "GNATCOLL_VERSION=$(GNATCOLL_VERSION)" >> makefile.setup
+ 	$(ECHO) "GNATCOLL_SQLITE=$(GNATCOLL_SQLITE)" >> makefile.setup
