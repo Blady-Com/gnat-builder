@@ -707,6 +707,7 @@ clean-libadalang-prefix:
 gtkada-build: gtkada-src
 	mkdir -p $@
 	cp -a $</* $@
+	cd $@ && patch -p1 < ../patches/gtkada-patch.txt
 	cd $@ && ./configure --prefix=$(prefix) --with-GL=no $(gtkada-options)
 
 .PHONY: gtkada
