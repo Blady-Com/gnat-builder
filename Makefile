@@ -588,6 +588,7 @@ gnatcoll-bindings-install:
 gnatcoll-db-build: gnatcoll-db-src
 	mkdir -p $@
 	cp -a $</* $@
+	cd $@ && patch -p1 < ../patches/gnatcoll-db-patch.txt
 	make -C $</sql prefix=$(prefix) $(gnatcoll-db-options) setup
 	make -C $</gnatcoll_db2ada prefix=$(prefix) $(gnatcoll-db-options) setup
 	make -C $</sqlite prefix=$(prefix) $(gnatcoll-db-options) setup
